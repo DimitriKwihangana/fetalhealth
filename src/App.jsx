@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './navbar';
 import Home from './home';
-import PredictForm from './predict';
 import SecondPredict from './predict2';
 import RetrainModel from './retrain';
 import Visual from './visual';
