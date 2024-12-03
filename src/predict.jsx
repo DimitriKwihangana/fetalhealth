@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from 'axios';
 import { ClipLoader } from "react-spinners";
 
 const PredictForm = () => {
@@ -48,8 +47,20 @@ const PredictForm = () => {
     setLoading(true);
     setResult(null);
     try {
-      const response = await axios.post("https://medistat.onrender.com/predict/", formData);
-      setResult(response.data);
+      const response = await fetch("https://medistat.onrender.com/predict/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      setResult(data);
     } catch (err) {
       console.error("Error making prediction:", err);
       setError("An error occurred. Please try again.");

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from 'axios';
 
 function SecondPredict() {
   const [baselineValue, setBaselineValue] = useState(0);
@@ -24,7 +23,7 @@ function SecondPredict() {
   const [histogramMedian, setHistogramMedian] = useState(0);
   const [histogramTendency, setHistogramTendency] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [predictionResult, setPredictionResult] = useState(""); 
+  const [predictionResult, setPredictionResult] = useState("");
 
   const notifySuccess = (message) =>
     toast.success(message, { position: "top-right", autoClose: 3000 });
@@ -34,34 +33,46 @@ function SecondPredict() {
   const MakePrediction = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("https://medistat.onrender.com/predict/", {
-        baseline_value: baselineValue,
-        accelerations,
-        fetal_movement: fetalMovement,
-        uterine_contractions: uterineContractions,
-        light_decelerations: lightDecelerations,
-        prolongued_decelerations: prolongedDecelerations,
-        abnormal_short_term_variability: abnormalShortTermVariability,
-        mean_value_of_short_term_variability: meanShortTermVariability,
-        percentage_of_time_with_abnormal_long_term_variability:
-          abnormalLongTermVariability,
-        histogram_width: histogramWidth,
-        histogram_min: histogramMin,
-        histogram_max: histogramMax,
-        histogram_number_of_peaks: histogramPeaks,
-        histogram_number_of_zeroes: histogramZeroes,
-        histogram_mode: histogramMode,
-        histogram_median: histogramMedian,
-        histogram_tendency: histogramTendency,
+      const response = await fetch("https://medistat.onrender.com/predict/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          baseline_value: baselineValue,
+          accelerations,
+          fetal_movement: fetalMovement,
+          uterine_contractions: uterineContractions,
+          light_decelerations: lightDecelerations,
+          prolongued_decelerations: prolongedDecelerations,
+          abnormal_short_term_variability: abnormalShortTermVariability,
+          mean_value_of_short_term_variability: meanShortTermVariability,
+          percentage_of_time_with_abnormal_long_term_variability:
+            abnormalLongTermVariability,
+          histogram_width: histogramWidth,
+          histogram_min: histogramMin,
+          histogram_max: histogramMax,
+          histogram_number_of_peaks: histogramPeaks,
+          histogram_number_of_zeroes: histogramZeroes,
+          histogram_mode: histogramMode,
+          histogram_median: histogramMedian,
+          histogram_tendency: histogramTendency,
+        }),
       });
 
-      setLoading(false);
-      const prediction = response.data.prediction;
-      setPredictionResult(response.data.prediction);
+      if (!response.ok) {
+        throw new Error("Failed to fetch prediction.");
+      }
+
+      const data = await response.json();
+      const prediction = data.prediction;
+      setPredictionResult(prediction);
       notifySuccess(`Prediction: ${prediction}`);
-    } catch (err) {
       setLoading(false);
+    } catch (err) {
       notifyError("Failed to get prediction. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,12 +152,11 @@ function SecondPredict() {
               </div>
             ))}
           </div>
-           {predictionResult && (
-                <div className="p-2 mb-4 bg-blue-100 border border-blue-300 rounded">
-                  <strong>Prediction Result:</strong> {predictionResult}
-                </div>
-              )}
-              
+          {predictionResult && (
+            <div className="p-2 mb-4 bg-blue-100 border border-blue-300 rounded">
+              <strong>Prediction Result:</strong> {predictionResult}
+            </div>
+          )}
           <div className="mt-6 flex justify-center">
             <button
               onClick={MakePrediction}
@@ -157,12 +167,10 @@ function SecondPredict() {
             >
               {loading ? "Processing..." : "Predict"}
             </button>
-
           </div>
         </div>
       </div>
     </>
   );
 }
-
 export default SecondPredict;
